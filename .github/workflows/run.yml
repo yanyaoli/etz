@@ -1,0 +1,57 @@
+name: Run Task
+
+on:
+  schedule:
+    - cron: '0 2-10 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
+
+    - name: Run script and write to content.txt
+      run: |
+        python main.py > content.txt
+      env:
+        TOKEN: ${{ secrets.TOKEN }}
+        TOPIC: ${{ secrets.TOPIC }}
+
+    - name: Check for changes
+      id: changes
+      run: git diff --exit-code || echo "::set-output name=changed::true"
+      continue-on-error: true
+
+    - name: Push changes to repository
+      if: steps.changes.outputs.changed == 'true'
+      run: |
+        git config --global user.email "actions@github.com"
+        git config --global user.name "github-actions[bot]"
+        git add content.txt
+        git commit -m "Update content.txt"
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/yanyaoli/cuit-jwc.git
+        git push
+
+    - name: Pushplus
+      if: steps.changes.outputs.changed == 'true'
+      uses: joelwmale/webhook-action@2.1.0
+      with:
+        url: 'http://www.pushplus.plus/send'
+        payload: '{ "token": "${{ secrets.TOKEN }}", "title": "成都信息工程大学教务处通知", "content": "$(cat content.txt)", "topic": "${{ env.TOPIC }}", "template": "html" }'
+      env:
+        TOKEN: ${{ secrets.TOKEN }}
+        TOPIC: ${{ secrets.TOPIC }}
