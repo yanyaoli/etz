@@ -33,11 +33,12 @@ jobs:
 
     - name: Check for changes
       id: changes
-      run: git diff --exit-code || echo "::set-output name=changed::true"
+      run: |
+        git diff --exit-code || echo "changed=true" >> $GITHUB_ENV
       continue-on-error: true
 
     - name: Push changes to repository
-      if: steps.changes.outputs.changed == 'true'
+      if: env.changed == 'true'
       run: |
         git config --global user.email "actions@github.com"
         git config --global user.name "github-actions[bot]"
@@ -46,8 +47,8 @@ jobs:
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/yanyaoli/cuit-jwc.git
         git push
 
-    - name: Pushplus
-      if: steps.changes.outputs.changed == 'true'
+    - name: Send notification to Pushplus
+      if: env.changed == 'true'
       uses: joelwmale/webhook-action@2.1.0
       with:
         url: 'http://www.pushplus.plus/send'
