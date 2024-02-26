@@ -34,11 +34,15 @@ jobs:
     - name: Check for changes
       id: changes
       run: |
-        git diff --exit-code || echo "changed=true" >> $GITHUB_ENV
-      continue-on-error: true
+        if git diff --quiet content.txt; then
+          echo "changed=false"
+        else
+          echo "changed=true"
+          echo "changed=true" >> $GITHUB_ENV
+        fi
 
     - name: Push changes to repository
-      if: env.changed == 'true'
+      if: env.changes == 'true'
       run: |
         git config --global user.email "actions@github.com"
         git config --global user.name "github-actions[bot]"
@@ -48,7 +52,7 @@ jobs:
         git push
 
     - name: Send notification to Pushplus
-      if: env.changed == 'true'
+      if: env.changes == 'true'
       uses: joelwmale/webhook-action@2.1.0
       with:
         url: 'http://www.pushplus.plus/send'
