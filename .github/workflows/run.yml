@@ -29,14 +29,13 @@ jobs:
       run: |
         python main.py > content.txt
         if git diff --quiet content.txt; then
-          echo "changed=false"
+          echo "changed=false" >> $GITHUB_ENV
         else
-          echo "changed=true"
-          echo "::set-output name=changed::true"
+          echo "changed=true" >> $GITHUB_ENV
         fi
 
     - name: Push changes to repository
-      if: steps.run_script.outputs.changed == 'true'  # 使用步骤的输出来判断条件
+      if: ${{ env.changed == 'true' }}  # 使用环境变量来判断条件
       run: |
         git config --global user.email "actions@github.com"
         git config --global user.name "github-actions[bot]"
@@ -46,7 +45,7 @@ jobs:
         git push
 
     - name: Send notification to Pushplus
-      if: steps.run_script.outputs.changed == 'true'  # 使用步骤的输出来判断条件
+      if: ${{ env.changed == 'true' }}  # 使用环境变量来判断条件
       uses: joelwmale/webhook-action@2.1.0
       with:
         url: 'http://www.pushplus.plus/send'
