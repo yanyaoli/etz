@@ -51,7 +51,7 @@ jobs:
       uses: joelwmale/webhook-action@2.1.0
       with:
         url: 'http://www.pushplus.plus/send'
-        payload: '{ "token": "${{ secrets.TOKEN }}", "title": "成都信息工程大学教务处通知", "content": "$(cat content.txt)", "topic": "${{ env.TOPIC }}", "template": "html" }'
+        body: '{ "token": "${{ secrets.TOKEN }}", "title": "成都信息工程大学教务处通知", "content": "$(cat content.txt)", "topic": "${{ secrets.TOPIC }}", "template": "html" }'
       env:
         TOKEN: ${{ secrets.TOKEN }}
         TOPIC: ${{ secrets.TOPIC }}

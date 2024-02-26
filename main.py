@@ -18,7 +18,7 @@ def tzgg():
         soup = BeautifulSoup(response.text, 'html.parser')
         divs = soup.find_all('div', class_='title')
         result = ""
-        for div in divs[0:5]:
+        for div in divs[0:3]:
             h5 = div.find('h5', class_='col_45')
             a = h5.find('a')
             a['href'] = urljoin(url, a['href'])
@@ -38,7 +38,7 @@ def jwyx():
         soup = BeautifulSoup(response.text, 'html.parser')
         divs = soup.find_all('div', class_='title')
         result = ""
-        for div in divs[0:5]:
+        for div in divs[0:3]:
             h5 = div.find('h5', class_='col_45')
             a = h5.find('a')
             a['href'] = urljoin(url, a['href'])
