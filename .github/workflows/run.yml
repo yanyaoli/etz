@@ -1,8 +1,8 @@
-name: Run Task
+name: Auto
 
 on:
   schedule:
-    - cron: '0 2-10 * * *'
+    - cron: '0 2-10 * * *'  # 北京时间每天早上10点到下午20点每隔一小时运行一次
   workflow_dispatch:
 
 jobs:
@@ -10,46 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
       with:
-        python-version: '3.x'
+        node-version: '14'
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests beautifulsoup4
+      run: npm install
 
-    - name: Run script and write to content.txt
-      id: run_script  # 给步骤一个ID，以便在后续步骤中引用
-      run: |
-        python main.py > content.txt
-        if git diff --quiet content.txt; then
-          echo "changed=false" >> $GITHUB_ENV
-        else
-          echo "changed=true" >> $GITHUB_ENV
-        fi
-
-    - name: Push changes to repository
-      if: ${{ env.changed == 'true' }}  # 使用环境变量来判断条件
-      run: |
-        git config --global user.email "actions@github.com"
-        git config --global user.name "github-actions[bot]"
-        git add content.txt
-        git commit -m "Update content.txt"
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/yanyaoli/cuit-jwc.git
-        git push
-
-    - name: Send notification to Pushplus
-      if: ${{ env.changed == 'true' }}  # 使用环境变量来判断条件
-      uses: joelwmale/webhook-action@2.1.0
-      with:
-        url: 'http://www.pushplus.plus/send'
-        body: '{ "token": "${{ secrets.TOKEN }}", "title": "成都信息工程大学教务处通知", "content": "$(cat content.txt)", "topic": "${{ secrets.TOPIC }}", "template": "html" }'
-      env:
-        TOKEN: ${{ secrets.TOKEN }}
-        TOPIC: ${{ secrets.TOPIC }}
+    - name: Run Node.js script
+      run: node app.js
