@@ -60,7 +60,7 @@ async function fetchTzgg() {
 
 async function pushplus() {
     const TOKEN = process.env.TOKEN;
-    const TOPIC = process.env.TOPIC;
+    const TOPIC = process.env.TOPIC || '';
 
     const jwyxResult = await fetchJwyx();
     const tzggResult = await fetchTzgg();
@@ -87,7 +87,7 @@ async function pushplus() {
             console.error(`推送失败: ${error}`);
         }
     } else {
-        console.log('无今天的内容，不推送。');
+        console.log('今日无更新，不推送。');
     }
 }
 

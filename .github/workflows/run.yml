@@ -2,7 +2,7 @@ name: Auto
 
 on:
   schedule:
-    - cron: '0 2-10 * * *'  # 北京时间每天早上10点到下午20点每隔一小时运行一次
+    - cron: "0 2-10 * * *" # 北京时间每天早上10点到下午20点每隔一小时运行一次
   workflow_dispatch:
 
 jobs:
@@ -10,16 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run Node.js script
-      run: node app.js
+      - name: Run Node.js script
+        run: node app.js
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+          TOPIC: ${{ secrets.TOPIC }}
