@@ -1,0 +1,1 @@
+<br/><a href='https://jwc.cuit.edu.cn/tzgg.htm'>【通知公告】(点击查看更多)<a/><br/><a href="https://jwc.cuit.edu.cn/info/1161/2964.htm" target="_blank">成都信息工程大学2024年春季辅修专业、微专业招生报名通知 (2024/06/18)</a><br/>
