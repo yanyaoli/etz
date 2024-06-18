@@ -1,4 +1,4 @@
-name: Auto
+name: Auto Update News
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  update-news:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,8 +21,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Node.js script
+      - name: Run Node.js script to check and update news
         run: node app.js
         env:
           TOKEN: ${{ secrets.TOKEN }}
           TOPIC: ${{ secrets.TOPIC }}
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add news.md
+          git commit -m "教务处通知更新" || echo "无更新"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

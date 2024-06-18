@@ -4,6 +4,7 @@ const { URL } = require('url');
 const dayjs = require('dayjs');
 const isBetween = require('dayjs/plugin/isBetween');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
+const fs = require('fs').promises; // 引入fs模块的promises API
 
 dayjs.extend(isBetween);
 dayjs.extend(customParseFormat);
@@ -58,6 +59,25 @@ async function fetchTzgg() {
     return await fetchContent("https://jwc.cuit.edu.cn/tzgg.htm", "通知公告");
 }
 
+async function readNewsFile() {
+    try {
+        const content = await fs.readFile('news.md', 'utf8');
+        return content;
+    } catch (error) {
+        console.error('读取news.md失败:', error);
+        return '';
+    }
+}
+
+async function updateNewsFile(content) {
+    try {
+        await fs.writeFile('news.md', content, 'utf8');
+        console.log('news.md已更新');
+    } catch (error) {
+        console.error('更新news.md失败:', error);
+    }
+}
+
 async function pushplus() {
     const TOKEN = process.env.TOKEN;
     const TOPIC = process.env.TOPIC || '';
@@ -68,28 +88,31 @@ async function pushplus() {
     const content = jwyxResult.content + "<br/>" + tzggResult.content;
     const todayIncluded = jwyxResult.todayIncluded || tzggResult.todayIncluded;
 
-    console.log(content);
     if (todayIncluded) {
-        const url = 'http://www.pushplus.plus/send/';
-        const payload = {
-            token: TOKEN,
-            title: "成都信息工程大学教务处通知",
-            content: content,
-            topic: TOPIC,
-            template: "html"
-        };
+        const oldContent = await readNewsFile();
+        if (content !== oldContent) {
+            const url = 'http://www.pushplus.plus/send/';
+            const payload = {
+                token: TOKEN,
+                title: "成都信息工程大学教务处通知",
+                content: content,
+                topic: TOPIC,
+                template: "html"
+            };
 
-        try {
-            const response = await axios.post(url, payload);
-            const data = response.data;
-            console.log(data.msg);
-        } catch (error) {
-            console.error(`推送失败: ${error}`);
+            try {
+                const response = await axios.post(url, payload);
+                console.log(response.data.msg);
+                await updateNewsFile(content); // 推送成功后更新news.md
+            } catch (error) {
+                console.error(`推送失败: ${error}`);
+            }
+        } else {
+            console.log('内容未变更，不推送。');
         }
     } else {
         console.log('今日无更新，不推送。');
     }
 }
 
-// 调用推送函数
 pushplus();
