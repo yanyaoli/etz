@@ -10,7 +10,7 @@
 >
 > 群组二维码，微信扫码加入群发群组，每天获取教务处通知。
 >
-> <img src="https://etz.cuit.workers.dev" height="300">
+> <img src="https://etz.cuit.workers.dev/qr" height="300">
 
 
 ## 使用方法
@@ -19,4 +19,4 @@
 
 2. 选择自己的分支仓库 -> `Settings` -> `Secrets and Variables` -> `Action` -> `New repository secret`，添加以下内容：
 - - [x] **TOKEN**, 必填项, [官网](https://pushplus.hxtrip.com/)免费申请
-- - [ ] TOPIC, 如果需要群发，可以设置群组ID 
+- - [ ] TOPIC, 如果需要群发，可以设置群组ID

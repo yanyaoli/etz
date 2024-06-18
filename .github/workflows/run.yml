@@ -32,7 +32,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add news.md
-          git commit -m "教务处通知更新" || echo "无更新"
+          git commit -m "教务处通知更新存档" || echo "无更新"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
