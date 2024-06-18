@@ -4,7 +4,7 @@ const { URL } = require('url');
 const dayjs = require('dayjs');
 const isBetween = require('dayjs/plugin/isBetween');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
-const fs = require('fs').promises; // 引入fs模块的promises API
+const fs = require('fs').promises;
 
 dayjs.extend(isBetween);
 dayjs.extend(customParseFormat);
@@ -64,7 +64,7 @@ async function readNewsFile() {
         const content = await fs.readFile('news.md', 'utf8');
         return content;
     } catch (error) {
-        console.error('读取news.md失败:', error);
+        console.error('教务处通知存档读取失败:', error);
         return '';
     }
 }
@@ -72,9 +72,9 @@ async function readNewsFile() {
 async function updateNewsFile(content) {
     try {
         await fs.writeFile('news.md', content, 'utf8');
-        console.log('news.md已更新');
+        console.log('教务处通知存档成功');
     } catch (error) {
-        console.error('更新news.md失败:', error);
+        console.error('教务处通知存档失败:', error);
     }
 }
 
