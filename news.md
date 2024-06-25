@@ -1,1 +1,1 @@
-<a href='https://jwc.cuit.edu.cn/tzgg/jxyx.htm'>【教学运行】(点击查看更多)<a/><br/><a href="https://jwc.cuit.edu.cn/info/1174/2965.htm" target="_blank">关于2024年下半年全国计算机等级考试报名的通知 (2024/06/24)</a><br/><br/>
+<a href='https://jwc.cuit.edu.cn/tzgg/jxyx.htm'>【教学运行】(点击查看更多)<a/><br/><a href="https://jwc.cuit.edu.cn/info/1174/2965.htm" target="_blank">关于2024年下半年全国计算机等级考试报名的通知 (2024/06/24)</a><br/><br/><a href='https://jwc.cuit.edu.cn/tzgg.htm'>【通知公告】(点击查看更多)<a/><br/><a href="https://jwc.cuit.edu.cn/info/1161/2966.htm" target="_blank">成都信息工程大学2024年省级大学生校外实践教育基地申报评审结果公示 (2024/06/25)</a><br/>
