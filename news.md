@@ -1,1 +1,1 @@
-<br/><a href='https://jwc.cuit.edu.cn/tzgg.htm'>【通知公告】(点击查看更多)<a/><br/><a href="https://jwc.cuit.edu.cn/info/1161/2969.htm" target="_blank">成都信息工程大学学生图像信息采集服务单位比选公告 (2024/07/04)</a><br/><a href="https://jwc.cuit.edu.cn/info/1161/2968.htm" target="_blank">成都信息工程大学关于严肃考风考纪的公告 (2024/07/01)</a><br/>
+<br/><a href='https://jwc.cuit.edu.cn/tzgg.htm'>【通知公告】(点击查看更多)<a/><br/><a href="https://jwc.cuit.edu.cn/info/1161/2982.htm" target="_blank">转专业名单公示 (2024/07/05)</a><br/><a href="https://jwc.cuit.edu.cn/info/1161/2969.htm" target="_blank">成都信息工程大学学生图像信息采集服务单位比选公告 (2024/07/04)</a><br/>
