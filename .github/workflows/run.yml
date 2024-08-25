@@ -24,15 +24,16 @@ jobs:
       - name: Run Node.js script to check and update news
         run: node app.js
         env:
-          TOKEN: ${{ secrets.TOKEN }}
-          TOPIC: ${{ secrets.TOPIC }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC }}
+          SERVERCHAN_SCKEY: ${{ secrets.SERVERCHAN_SCKEY }}
 
       - name: Commit changes
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add news.md
-          git commit -m "教务处通知更新存档" || echo "无更新"
+          git commit -m "docs: update the archive" || echo "docs: no updates"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
