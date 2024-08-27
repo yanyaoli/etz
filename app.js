@@ -1,3 +1,5 @@
+const { pushplus, serverChan, wechatBot } = require('./notifier');
+
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { URL } = require('url');
@@ -13,7 +15,7 @@ const COMMON_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
 };
 
-// 检查今日是否更新
+// 检查更新
 async function fetchContent(url, titleText) {
     try {
         const response = await axios.get(url, { headers: COMMON_HEADERS });
@@ -23,7 +25,7 @@ async function fetchContent(url, titleText) {
             let result = "";
             let todayIncluded = false;
             const today = dayjs().startOf('day');
-            const threeDaysAgo = today.subtract(60, 'day');
+            const threeDaysAgo = today.subtract(3, 'day');
 
             divs.each((index, div) => {
                 const h5 = $(div).find('h5');
@@ -59,6 +61,84 @@ async function fetchTzgg() {
     return await fetchContent("https://jwc.cuit.edu.cn/tzgg.htm", "通知公告");
 }
 
+async function fetchXxgg() {
+    const url = "https://www.cuit.edu.cn/xw/xxgg.htm";
+    const titleText = "信息公告";
+
+    try {
+        const response = await axios.get(url, { headers: COMMON_HEADERS });
+        if (response.status === 200) {
+            const $ = cheerio.load(response.data);
+            const items = $('ul.list_l.list_lt.fr.cleafix li');
+            let result = "";
+            let todayIncluded = false;
+            const today = dayjs().startOf('day');
+            const threeDaysAgo = today.subtract(60, 'day');
+
+            items.each((index, item) => {
+                const dateText = $(item).find('span.fr.gray').text().trim();
+                const date = dayjs(dateText, 'YYYY-MM-DD', true);
+                if (date.isValid() && date.isBetween(threeDaysAgo, today, null, '[]')) {
+                    const a = $(item).find('a');
+                    const href = new URL(a.attr('href'), url).href;
+                    const text = `${a.text().trim()} (${dateText})`;
+                    result += `[${text}](${href})\n\n`;
+                    if (date.isSame(today, 'day')) {
+                        todayIncluded = true;
+                    }
+                }
+            });
+
+            return { content: result ? `[【${titleText}】(点击查看更多)](${url})\n\n` + result : "", todayIncluded };
+        } else {
+            console.error(`${titleText} 页面访问失败`);
+            return { content: "", todayIncluded: false };
+        }
+    } catch (error) {
+        console.error(`${titleText} 获取失败: ${error}`);
+        return { content: "", todayIncluded: false };
+    }
+}
+
+async function fetchGsl() {
+    const url = "https://xsgzc.cuit.edu.cn/index/gsl.htm";
+    const titleText = "公示栏";
+
+    try {
+        const response = await axios.get(url, { headers: COMMON_HEADERS });
+        if (response.status === 200) {
+            const $ = cheerio.load(response.data);
+            const items = $('ul.nav-left li.list');
+            let result = "";
+            let todayIncluded = false;
+            const today = dayjs().startOf('day');
+            const threeDaysAgo = today.subtract(60, 'day');
+
+            items.each((index, item) => {
+                const dateText = $(item).find('span.date').text().trim();
+                const date = dayjs(dateText, 'YYYY-MM-DD', true);
+                if (date.isValid() && date.isBetween(threeDaysAgo, today, null, '[]')) {
+                    const a = $(item).find('a.list_data');
+                    const href = new URL(a.attr('href'), url).href;
+                    const text = `${a.attr('title')} (${dateText})`;
+                    result += `[${text}](${href})\n\n`;
+                    if (date.isSame(today, 'day')) {
+                        todayIncluded = true;
+                    }
+                }
+            });
+
+            return { content: result ? `[【${titleText}】(点击查看更多)](${url})\n\n` + result : "", todayIncluded };
+        } else {
+            console.error(`${titleText} 页面访问失败`);
+            return { content: "", todayIncluded: false };
+        }
+    } catch (error) {
+        console.error(`${titleText} 获取失败: ${error}`);
+        return { content: "", todayIncluded: false };
+    }
+}
+
 async function readNewsFile() {
     try {
         const content = await fs.readFile('news.md', 'utf8');
@@ -78,68 +158,22 @@ async function updateNewsFile(content) {
     }
 }
 
-async function pushNotification(url, payload) {
-    try {
-        const response = await axios.post(url, payload);
-        console.log(response.data.msg);
-        return true;
-    } catch (error) {
-        console.error(`推送失败: ${error}`);
-        return false;
-    }
-}
-
-async function pushplus(content) {
-    const TOKEN = process.env.PUSHPLUS_TOKEN;
-    const TOPIC = process.env.PUSHPLUS_TOPIC || '';
-
-    if (!TOKEN) {
-        console.log('PUSHPLUS_TOKEN 未设置，跳过 Pushplus 推送。');
-        return false;
-    }
-
-    const url = 'http://www.pushplus.plus/send/';
-    const payload = {
-        token: TOKEN,
-        title: "成都信息工程大学教务处通知",
-        content: content,
-        topic: TOPIC,
-        template: "markdown"
-    };
-
-    return await pushNotification(url, payload);
-}
-
-async function serverChan(content) {
-    const SCKEY = process.env.SERVERCHAN_SCKEY;
-
-    if (!SCKEY) {
-        console.log('SERVERCHAN_SCKEY 未设置，跳过 Server酱 推送。');
-        return false;
-    }
-
-    const url = `https://sctapi.ftqq.com/${SCKEY}.send`;
-    const payload = {
-        title: "成都信息工程大学教务处通知",
-        desp: content
-    };
-
-    return await pushNotification(url, payload);
-}
-
 async function main() {
-    const jwyxResult = await fetchJwyx();
-    const tzggResult = await fetchTzgg();
+    const jwyxResult = await fetchJwyx(); // 教务运行
+    const tzggResult = await fetchTzgg(); // 通知公告
+    const xxggResult = await fetchXxgg(); // 信息公告
+    const gslResult = await fetchGsl(); // 公示栏
 
-    const content = jwyxResult.content + "\n\n" + tzggResult.content;
+    const content = jwyxResult.content + "\n\n" + tzggResult.content + "\n\n" + xxggResult.content + "\n\n" + gslResult.content;
 
-    if (content && (jwyxResult.todayIncluded || tzggResult.todayIncluded)) {
+    if (content && (jwyxResult.todayIncluded || tzggResult.todayIncluded || xxggResult.todayIncluded || gslResult.todayIncluded)) {
         const oldContent = await readNewsFile();
         if (content !== oldContent) {
             const pushplusSuccess = await pushplus(content);
             const serverChanSuccess = await serverChan(content);
+            const wechatBotSuccess = await wechatBot(content);
 
-            if (pushplusSuccess || serverChanSuccess) {
+            if (pushplusSuccess || serverChanSuccess || wechatBotSuccess) {
                 await updateNewsFile(content);
             } else {
                 console.log('所有推送方式均失败。');
@@ -152,4 +186,34 @@ async function main() {
     }
 }
 
+async function testMain() {
+    const jwyxResult = await fetchJwyx(); // 教务运行
+    const tzggResult = await fetchTzgg(); // 通知公告
+    const xxggResult = await fetchXxgg(); // 信息公告
+    const gslResult = await fetchGsl(); // 公示栏
+
+    const content = jwyxResult.content + "\n\n" + tzggResult.content + "\n\n" + xxggResult.content + "\n\n" + gslResult.content;
+
+    if (content) {
+        const oldContent = await readNewsFile();
+        if (content !== oldContent) {
+            const pushplusSuccess = await pushplus(content);
+            const serverChanSuccess = await serverChan(content);
+            const wechatBotSuccess = await wechatBot(content);
+
+            if (pushplusSuccess || serverChanSuccess || wechatBotSuccess) {
+                await updateNewsFile(content);
+            } else {
+                console.log('所有推送方式均失败。');
+            }
+        } else {
+            console.log('内容未变更，不推送。');
+        }
+    } else {
+        console.log('无内容，不推送。');
+    }
+}
+
 main();
+
+// testMain();
