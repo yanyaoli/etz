@@ -1,5 +1,9 @@
 
 
+[【通知公告】(点击查看更多)](https://jwc.cuit.edu.cn/tzgg.htm)
+
+[关于“十四五”普通高等教育本科规划教材拟推荐名单的公示 (2024/08/28)](https://jwc.cuit.edu.cn/info/1161/2987.htm)
+
 
 
 [【信息公告】(点击查看更多)](https://www.cuit.edu.cn/xw/xxgg.htm)
