@@ -15,7 +15,7 @@ const COMMON_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
 };
 
-// 检查更新
+// 教务处
 async function fetchContent(url, titleText) {
     try {
         const response = await axios.get(url, { headers: COMMON_HEADERS });
@@ -53,14 +53,17 @@ async function fetchContent(url, titleText) {
     }
 }
 
+// 教务运行
 async function fetchJwyx() {
     return await fetchContent("https://jwc.cuit.edu.cn/tzgg/jxyx.htm", "教学运行");
 }
 
+// 通知公告
 async function fetchTzgg() {
     return await fetchContent("https://jwc.cuit.edu.cn/tzgg.htm", "通知公告");
 }
 
+// 信息公告
 async function fetchXxgg() {
     const url = "https://www.cuit.edu.cn/xw/xxgg.htm";
     const titleText = "信息公告";
@@ -73,7 +76,7 @@ async function fetchXxgg() {
             let result = "";
             let todayIncluded = false;
             const today = dayjs().startOf('day');
-            const threeDaysAgo = today.subtract(60, 'day');
+            const threeDaysAgo = today.subtract(3, 'day');
 
             items.each((index, item) => {
                 const dateText = $(item).find('span.fr.gray').text().trim();
@@ -100,6 +103,7 @@ async function fetchXxgg() {
     }
 }
 
+// 公示栏
 async function fetchGsl() {
     const url = "https://xsgzc.cuit.edu.cn/index/gsl.htm";
     const titleText = "公示栏";
@@ -112,7 +116,7 @@ async function fetchGsl() {
             let result = "";
             let todayIncluded = false;
             const today = dayjs().startOf('day');
-            const threeDaysAgo = today.subtract(60, 'day');
+            const threeDaysAgo = today.subtract(3, 'day');
 
             items.each((index, item) => {
                 const dateText = $(item).find('span.date').text().trim();
@@ -139,6 +143,7 @@ async function fetchGsl() {
     }
 }
 
+// 读档
 async function readNewsFile() {
     try {
         const content = await fs.readFile('news.md', 'utf8');
@@ -149,6 +154,7 @@ async function readNewsFile() {
     }
 }
 
+// 存档
 async function updateNewsFile(content) {
     try {
         await fs.writeFile('news.md', content, 'utf8');
@@ -186,6 +192,7 @@ async function main() {
     }
 }
 
+// 测试
 async function testMain() {
     const jwyxResult = await fetchJwyx(); // 教务运行
     const tzggResult = await fetchTzgg(); // 通知公告
