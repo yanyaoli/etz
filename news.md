@@ -4,6 +4,12 @@
 
 
 
+[【通知公告】(点击查看更多)](https://jwc.cuit.edu.cn/tzgg.htm)
+
+[关于四川省本科高校应用型产教融合品牌教材拟推荐名单的公示 (2024/09/02)](https://jwc.cuit.edu.cn/info/1161/2990.htm)
+
+[关于四川省本科高校应用型品牌课程拟推荐名单的公示 (2024/09/02)](https://jwc.cuit.edu.cn/info/1161/2989.htm)
+
 
 
 [【信息公告】(点击查看更多)](https://www.cuit.edu.cn/xw/xxgg.htm)
