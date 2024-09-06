@@ -1,5 +1,7 @@
 [【教学运行】(点击查看更多)](https://jwc.cuit.edu.cn/tzgg/jxyx.htm)
 
+[关于2024年中秋节放假调课安排的通知 (2024/09/06)](https://jwc.cuit.edu.cn/info/1172/3013.htm)
+
 [2024-2025学年第一学期新生选课及重修、补修大一课程学生选课通知 (2024/09/06)](https://jwc.cuit.edu.cn/info/1173/3012.htm)
 
 
