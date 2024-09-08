@@ -53,38 +53,38 @@ async function fetchContent(url, titleText) {
     }
 }
 
-// 教务运行
+// 教务处-教务运行
 async function fetchJwyx() {
     return await fetchContent("https://jwc.cuit.edu.cn/tzgg/jxyx.htm", "教学运行");
 }
 
-// 通知公告
+// 教务处-通知公告
 async function fetchTzgg() {
     return await fetchContent("https://jwc.cuit.edu.cn/tzgg.htm", "通知公告");
 }
 
-// 信息公告
+// 官网新闻中心-通知公告
 async function fetchXxgg() {
-    const url = "https://www.cuit.edu.cn/xw/xxgg.htm";
+    const url = "https://www.cuit.edu.cn/index/tzgg.htm";
     const titleText = "信息公告";
 
     try {
         const response = await axios.get(url, { headers: COMMON_HEADERS });
         if (response.status === 200) {
             const $ = cheerio.load(response.data);
-            const items = $('ul.list_l.list_lt.fr.cleafix li');
+            const items = $('ul.list li[data-aos="fade-up"]');
             let result = "";
             let todayIncluded = false;
             const today = dayjs().startOf('day');
             const threeDaysAgo = today.subtract(3, 'day');
 
             items.each((index, item) => {
-                const dateText = $(item).find('span.fr.gray').text().trim();
+                const dateText = $(item).find('span').text().trim();
                 const date = dayjs(dateText, 'YYYY-MM-DD', true);
                 if (date.isValid() && date.isBetween(threeDaysAgo, today, null, '[]')) {
                     const a = $(item).find('a');
                     const href = new URL(a.attr('href'), url).href;
-                    const text = `${a.text().trim()} (${dateText})`;
+                    const text = `${a.attr('title')} (${dateText})`;
                     result += `[${text}](${href})\n\n`;
                     if (date.isSame(today, 'day')) {
                         todayIncluded = true;
@@ -103,7 +103,7 @@ async function fetchXxgg() {
     }
 }
 
-// 公示栏
+// 学生处-公示栏
 async function fetchGsl() {
     const url = "https://xsgzc.cuit.edu.cn/index/gsl.htm";
     const titleText = "公示栏";
@@ -165,10 +165,10 @@ async function updateNewsFile(content) {
 }
 
 async function main() {
-    const jwyxResult = await fetchJwyx(); // 教务运行
-    const tzggResult = await fetchTzgg(); // 通知公告
-    const xxggResult = await fetchXxgg(); // 信息公告
-    const gslResult = await fetchGsl(); // 公示栏
+    const jwyxResult = await fetchJwyx(); // 教务处-教务运行
+    const tzggResult = await fetchTzgg(); // 教务处-通知公告
+    const xxggResult = await fetchXxgg(); // 官网新闻中心-信息公告
+    const gslResult = await fetchGsl(); // 学生处-公示栏
 
     const content = jwyxResult.content + "\n\n" + tzggResult.content + "\n\n" + xxggResult.content + "\n\n" + gslResult.content;
 
