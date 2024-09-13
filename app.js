@@ -1,5 +1,4 @@
-const { pushplus, serverChan, wechatBot } = require('./notifier');
-
+const { pushplus, serverChan, wechatBot, wecomBot } = require('./notifier');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { URL } = require('url');
@@ -22,10 +21,8 @@ async function fetchContent(url, titleText) {
         if (response.status === 200) {
             const $ = cheerio.load(response.data);
             const divs = $('div.title');
-            let result = "";
-            let todayIncluded = false;
+            let result = [];
             const today = dayjs().startOf('day');
-            const threeDaysAgo = today.subtract(3, 'day');
 
             divs.each((index, div) => {
                 const h5 = $(div).find('h5');
@@ -33,27 +30,24 @@ async function fetchContent(url, titleText) {
                 const h6Text = $(div).find('h6').text().trim();
                 const date = dayjs(h6Text, 'YYYY/MM/DD', true);
 
-                if (date.isValid() && date.isBetween(threeDaysAgo, today, null, '[]')) {
+                if (date.isValid() && date.isSame(today, 'day')) {
                     const href = new URL(a.attr('href'), url).href;
                     const text = `${a.text().trim()} (${h6Text})`;
-                    result += `[${text}](${href})\n\n`;
-                    if (date.isSame(today, 'day')) {
-                        todayIncluded = true;
-                    }
+                    result.push({ titleText, text, href, url });
                 }
             });
-            return { content: result ? `[【${titleText}】(点击查看更多)](${url})\n\n` + result : "", todayIncluded };
+            return result;
         } else {
             console.error('页面访问失败');
-            return { content: "", todayIncluded: false };
+            return [];
         }
     } catch (error) {
         console.error(`${titleText} 获取失败: ${error}`);
-        return { content: "", todayIncluded: false };
+        return [];
     }
 }
 
-// 教务处-教务运行
+// 教务处-教学运行
 async function fetchJwyx() {
     return await fetchContent("https://jwc.cuit.edu.cn/tzgg/jxyx.htm", "教学运行");
 }
@@ -66,40 +60,35 @@ async function fetchTzgg() {
 // 官网新闻中心-通知公告
 async function fetchXxgg() {
     const url = "https://www.cuit.edu.cn/index/tzgg.htm";
-    const titleText = "信息公告";
+    const titleText = "新闻中心通知公告";
 
     try {
         const response = await axios.get(url, { headers: COMMON_HEADERS });
         if (response.status === 200) {
             const $ = cheerio.load(response.data);
             const items = $('ul.list li[data-aos="fade-up"]');
-            let result = "";
-            let todayIncluded = false;
+            let result = [];
             const today = dayjs().startOf('day');
-            const threeDaysAgo = today.subtract(3, 'day');
 
             items.each((index, item) => {
                 const dateText = $(item).find('span').text().trim();
                 const date = dayjs(dateText, 'YYYY-MM-DD', true);
-                if (date.isValid() && date.isBetween(threeDaysAgo, today, null, '[]')) {
+                if (date.isValid() && date.isSame(today, 'day')) {
                     const a = $(item).find('a');
                     const href = new URL(a.attr('href'), url).href;
-                    const text = `${a.attr('title')} (${dateText})`;
-                    result += `[${text}](${href})\n\n`;
-                    if (date.isSame(today, 'day')) {
-                        todayIncluded = true;
-                    }
+                    const text = `${a.attr('title')}`;
+                    result.push({ titleText, text, href, url });
                 }
             });
 
-            return { content: result ? `[【${titleText}】(点击查看更多)](${url})\n\n` + result : "", todayIncluded };
+            return result;
         } else {
             console.error(`${titleText} 页面访问失败`);
-            return { content: "", todayIncluded: false };
+            return [];
         }
     } catch (error) {
         console.error(`${titleText} 获取失败: ${error}`);
-        return { content: "", todayIncluded: false };
+        return [];
     }
 }
 
@@ -113,33 +102,28 @@ async function fetchGsl() {
         if (response.status === 200) {
             const $ = cheerio.load(response.data);
             const items = $('ul.nav-left li.list');
-            let result = "";
-            let todayIncluded = false;
+            let result = [];
             const today = dayjs().startOf('day');
-            const threeDaysAgo = today.subtract(3, 'day');
 
             items.each((index, item) => {
                 const dateText = $(item).find('span.date').text().trim();
                 const date = dayjs(dateText, 'YYYY-MM-DD', true);
-                if (date.isValid() && date.isBetween(threeDaysAgo, today, null, '[]')) {
+                if (date.isValid() && date.isSame(today, 'day')) {
                     const a = $(item).find('a.list_data');
                     const href = new URL(a.attr('href'), url).href;
-                    const text = `${a.attr('title')} (${dateText})`;
-                    result += `[${text}](${href})\n\n`;
-                    if (date.isSame(today, 'day')) {
-                        todayIncluded = true;
-                    }
+                    const text = `${a.attr('title')}`;
+                    result.push({ titleText, text, href, url });
                 }
             });
 
-            return { content: result ? `[【${titleText}】(点击查看更多)](${url})\n\n` + result : "", todayIncluded };
+            return result;
         } else {
             console.error(`${titleText} 页面访问失败`);
-            return { content: "", todayIncluded: false };
+            return [];
         }
     } catch (error) {
         console.error(`${titleText} 获取失败: ${error}`);
-        return { content: "", todayIncluded: false };
+        return [];
     }
 }
 
@@ -164,23 +148,38 @@ async function updateNewsFile(content) {
     }
 }
 
+// 格式化微信推送内容
+function formatWechatBotContent(titleText, text, href) {
+    return `【${titleText}】\n${text}\n${href}\n\n`;
+}
+
+// 格式化 Markdown 内容
+function formatMarkdownContent(items) {
+    return items.map(item => `[【${item.titleText}】](${item.url})\n[${item.text}](${item.href})\n\n`).join('\n\n');
+}
+
 async function main() {
-    const jwyxResult = await fetchJwyx(); // 教务处-教务运行
-    const tzggResult = await fetchTzgg(); // 教务处-通知公告
-    const xxggResult = await fetchXxgg(); // 官网新闻中心-信息公告
-    const gslResult = await fetchGsl(); // 学生处-公示栏
+    const jwyxItems = await fetchJwyx(); // 教务处-教务运行
+    const tzggItems = await fetchTzgg(); // 教务处-通知公告
+    const xxggItems = await fetchXxgg(); // 官网新闻中心-通知公告
+    const gslItems = await fetchGsl(); // 学生处-公示栏
 
-    const content = jwyxResult.content + "\n\n" + tzggResult.content + "\n\n" + xxggResult.content + "\n\n" + gslResult.content;
+    const allItems = [...jwyxItems, ...tzggItems, ...xxggItems, ...gslItems];
 
-    if (content && (jwyxResult.todayIncluded || tzggResult.todayIncluded || xxggResult.todayIncluded || gslResult.todayIncluded)) {
+    if (allItems.length > 0) {
+        const wechatBotContent = allItems.map(item => formatWechatBotContent(item.titleText, item.text, item.href)).join('');
+        const markdownContent = formatMarkdownContent(allItems);
+        const fullContent = markdownContent;
+
         const oldContent = await readNewsFile();
-        if (content !== oldContent) {
-            const pushplusSuccess = await pushplus(content);
-            const serverChanSuccess = await serverChan(content);
-            const wechatBotSuccess = await wechatBot(content);
+        if (fullContent !== oldContent) {
+            const pushplusSuccess = await pushplus(fullContent);
+            const serverChanSuccess = await serverChan(fullContent);
+            const wechatBotSuccess = await wechatBot(wechatBotContent);
+            const wecomBotSuccess = await wecomBot(fullContent);
 
-            if (pushplusSuccess || serverChanSuccess || wechatBotSuccess) {
-                await updateNewsFile(content);
+            if (pushplusSuccess || serverChanSuccess || wechatBotSuccess || wecomBotSuccess) {
+                await updateNewsFile(fullContent);
             } else {
                 console.log('所有推送方式均失败。');
             }
@@ -192,35 +191,19 @@ async function main() {
     }
 }
 
-// 测试
-async function testMain() {
-    const jwyxResult = await fetchJwyx(); // 教务运行
-    const tzggResult = await fetchTzgg(); // 通知公告
-    const xxggResult = await fetchXxgg(); // 信息公告
-    const gslResult = await fetchGsl(); // 公示栏
-
-    const content = jwyxResult.content + "\n\n" + tzggResult.content + "\n\n" + xxggResult.content + "\n\n" + gslResult.content;
-
-    if (content) {
-        const oldContent = await readNewsFile();
-        if (content !== oldContent) {
-            const pushplusSuccess = await pushplus(content);
-            const serverChanSuccess = await serverChan(content);
-            const wechatBotSuccess = await wechatBot(content);
-
-            if (pushplusSuccess || serverChanSuccess || wechatBotSuccess) {
-                await updateNewsFile(content);
-            } else {
-                console.log('所有推送方式均失败。');
-            }
-        } else {
-            console.log('内容未变更，不推送。');
-        }
-    } else {
-        console.log('无内容，不推送。');
-    }
-}
+module.exports = {
+    fetchJwyx,
+    fetchTzgg,
+    fetchXxgg,
+    fetchGsl,
+    readNewsFile,
+    pushplus,
+    serverChan,
+    wechatBot,
+    wecomBot,
+    updateNewsFile,
+    formatWechatBotContent,
+    formatMarkdownContent
+};
 
 main();
-
-// testMain();

@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-// Pushplus 推送
+// Pushplus
 async function pushplus(content) {
     const TOKEN = process.env.PUSHPLUS_TOKEN;
     const TOPIC = process.env.PUSHPLUS_TOPIC || '';
@@ -22,7 +22,7 @@ async function pushplus(content) {
     return await pushNotification(url, payload);
 }
 
-// Server酱 推送
+// Server酱
 async function serverChan(content) {
     const SCKEY = process.env.SERVERCHAN_SCKEY;
 
@@ -40,12 +40,31 @@ async function serverChan(content) {
     return await pushNotification(url, payload);
 }
 
-// 企业微信BOT 推送
+// 微信企业会话
 async function wechatBot(content) {
     const WECHAT_BOT_URL = process.env.WECHAT_BOT_URL;
 
     if (!WECHAT_BOT_URL) {
-        console.log('WECHAT_BOT_URL 未设置，跳过企业微信BOT推送。');
+        console.log('WECHAT_BOT_URL 未设置，跳过微信BOT推送。');
+        return false;
+    }
+
+    const payload = {
+        msgtype: "text",
+        text: {
+            content: content
+        }
+    };
+
+    return await pushNotification(WECHAT_BOT_URL, payload);
+}
+
+// 企业微信BOT
+async function wecomBot(content) {
+    const WECOM_BOT_URL = process.env.WECOM_BOT_URL;
+
+    if (!WECOM_BOT_URL) {
+        console.log('WECOM_BOT_URL 未设置，跳过企业微信BOT推送。');
         return false;
     }
 
@@ -56,7 +75,7 @@ async function wechatBot(content) {
         }
     };
 
-    return await pushNotification(WECHAT_BOT_URL, payload);
+    return await pushNotification(WECOM_BOT_URL, payload);
 }
 
 // 推送请求函数
@@ -75,5 +94,6 @@ async function pushNotification(url, payload) {
 module.exports = {
     pushplus,
     serverChan,
-    wechatBot
+    wechatBot,
+    wecomBot,
 };
