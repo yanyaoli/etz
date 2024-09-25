@@ -2,7 +2,7 @@
 
 📣 易通知 - 成都信息工程大学每日更新推送
 
-监测 <学校信息公告> <学生处公示栏> <教务处通知> 等新更新并进行推送，利用 `Pushplus` 、 `Server酱` 、 `企业微信BOT` 、 `微信企业会话群`实现推送功能。
+监测 <学校信息公告> <学生处公示栏> <教务处通知> 等新更新并进行推送，利用 `Pushplus` 、 `Server酱` 、 `企业微信BOT` 、 `微信企业会话群`、`Bark`实现推送功能。
 
 
 ## 使用
@@ -15,6 +15,7 @@
    - **SERVERCHAN_SCKEY**：[Server酱官网](https://sct.ftqq.com/)免费申请
    - **WECOM_BOT_URL**：企业微信 bot 的 webhook URL
    - **WECHAT_BOT_URL**: 使用企业微信BOT推送到微信企业会话（不支持Markdown格式）
+   - **BARK_TOKEN**: BarkApp推送令牌, ```https://api.day.app/你的TOKEN```
 
 
 ## Demo

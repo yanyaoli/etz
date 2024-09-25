@@ -78,6 +78,21 @@ async function wecomBot(content) {
     return await pushNotification(WECOM_BOT_URL, payload);
 }
 
+// Bark
+async function Bark(content) {
+    const BARK_TOKEN = process.env.BARK_TOKEN;
+
+    if (!BARK_TOKEN) {
+        console.log('BARK_TOKEN 未设置，跳过Bark推送。');
+        return false;
+    }
+
+    const encodedContent = encodeURIComponent(content);
+
+    const url = `https://api.day.app/${BARK_TOKEN}/成信易通知/${encodedContent}`;
+    return await pushNotification(url);
+}
+
 // 推送请求函数
 async function pushNotification(url, payload) {
     try {
@@ -96,4 +111,5 @@ module.exports = {
     serverChan,
     wechatBot,
     wecomBot,
+    Bark
 };

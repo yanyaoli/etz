@@ -1,18 +1,17 @@
-const { pushplus, serverChan, wechatBot, wecomBot } = require('./notifier');
+const { pushplus, serverChan, wechatBot, wecomBot, Bark } = require('./notifier');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { URL } = require('url');
 const dayjs = require('dayjs');
-const isBetween = require('dayjs/plugin/isBetween');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
 const fs = require('fs').promises;
 
-dayjs.extend(isBetween);
 dayjs.extend(customParseFormat);
 
 const COMMON_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
 };
+
 
 // 教务处
 async function fetchContent(url, titleText) {
@@ -32,7 +31,7 @@ async function fetchContent(url, titleText) {
 
                 if (date.isValid() && date.isSame(today, 'day')) {
                     const href = new URL(a.attr('href'), url).href;
-                    const text = `${a.text().trim()} (${h6Text})`;
+                    const text = `${a.text().trim()}`;
                     result.push({ titleText, text, href, url });
                 }
             });
@@ -149,13 +148,44 @@ async function updateNewsFile(content) {
 }
 
 // 格式化微信推送内容
-function formatWechatBotContent(titleText, text, href) {
-    return `【${titleText}】\n${text}\n${href}\n\n`;
+function formatWechatBotContent(items, dateInfo) {
+    const groupedItems = items.reduce((acc, item) => {
+        if (!acc[item.titleText]) {
+            acc[item.titleText] = [];
+        }
+        acc[item.titleText].push(item);
+        return acc;
+    }, {});
+
+    let content = `${dateInfo}\n\n`;
+    for (const [titleText, group] of Object.entries(groupedItems)) {
+        content += `【${titleText}】\n`;
+        group.forEach(item => {
+            content += `${item.text}\n${item.href}\n\n`;
+        });
+    }
+    return content;
 }
 
 // 格式化 Markdown 内容
-function formatMarkdownContent(items) {
-    return items.map(item => `[【${item.titleText}】](${item.url})\n[${item.text}](${item.href})\n\n`).join('\n\n');
+function formatMarkdownContent(items, dateInfo) {
+    const groupedItems = items.reduce((acc, item) => {
+        if (!acc[item.titleText]) {
+            acc[item.titleText] = [];
+        }
+        acc[item.titleText].push(item);
+        return acc;
+    }, {});
+
+    let content = `${dateInfo}\n\n`;
+    for (const [titleText, group] of Object.entries(groupedItems)) {
+        content += `## ${titleText}\n`;
+        group.forEach(item => {
+            content += `- [${item.text}](${item.href})\n`;
+        });
+        content += '\n';
+    }
+    return content;
 }
 
 async function main() {
@@ -167,8 +197,9 @@ async function main() {
     const allItems = [...jwyxItems, ...tzggItems, ...xxggItems, ...gslItems];
 
     if (allItems.length > 0) {
-        const wechatBotContent = allItems.map(item => formatWechatBotContent(item.titleText, item.text, item.href)).join('');
-        const markdownContent = formatMarkdownContent(allItems);
+        const today = dayjs().format('YYYY年M月D日');
+        const wechatBotContent = formatWechatBotContent(allItems, today);
+        const markdownContent = formatMarkdownContent(allItems, today);
         const fullContent = markdownContent;
 
         const oldContent = await readNewsFile();
@@ -177,8 +208,9 @@ async function main() {
             const serverChanSuccess = await serverChan(fullContent);
             const wechatBotSuccess = await wechatBot(wechatBotContent);
             const wecomBotSuccess = await wecomBot(fullContent);
+            const BarkBotSuccess = await Bark(fullContent);
 
-            if (pushplusSuccess || serverChanSuccess || wechatBotSuccess || wecomBotSuccess) {
+            if (pushplusSuccess || serverChanSuccess || wechatBotSuccess || wecomBotSuccess || BarkBotSuccess) {
                 await updateNewsFile(fullContent);
             } else {
                 console.log('所有推送方式均失败。');
@@ -197,10 +229,6 @@ module.exports = {
     fetchXxgg,
     fetchGsl,
     readNewsFile,
-    pushplus,
-    serverChan,
-    wechatBot,
-    wecomBot,
     updateNewsFile,
     formatWechatBotContent,
     formatMarkdownContent

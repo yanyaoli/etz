@@ -28,6 +28,7 @@ jobs:
           PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC }}
           SERVERCHAN_SCKEY: ${{ secrets.SERVERCHAN_SCKEY }}
           WECHAT_BOT_URL: ${{ secrets.WECHAT_BOT_URL }}
+          BARK_TOKEN: ${{ secrets.BARK_TOKEN }}
 
       - name: Commit changes
         run: |
